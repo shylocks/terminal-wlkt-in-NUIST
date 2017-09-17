@@ -19,7 +19,7 @@ def get_grade(username, password, academic_year=None, term=1, course_type=None):
         sys.exit()
 
     soup = BeautifulSoup(nuist.get(grade_url).text, 'html.parser')
-    whoami = soup.p.string.strip().split(',')[0]
+    whoami = soup.p.string.strip().split(',')[0][:-2]
 
     # TODO: support getting fail in the exams info, list[0] is passing in the exams.
     grade_result = soup.find_all('table', border="1")[0].contents
@@ -32,20 +32,39 @@ def get_grade(username, password, academic_year=None, term=1, course_type=None):
     for grade_strings in resultSet:
         grade_list.append([grade for grade in grade_strings.strings if grade != '\n'])
 
-    return header_list, grade_list
+    return header_list, whoami, grade_list
 
 def pretty_table(keywords):
-    header_list, grade_list, *_ = keywords
-    # Print table header using tab as delimiter
-    for header_index in range(8):
-        print(header_list[header_index], end='\t\t')
+    header_list, whoami, grade_list = keywords
 
-    print('', flush=True)
+    print('\n'*2)
+    print('--'*35 + whoami + '--'*35, end='\t\t')
+    print('')
+    # Print table header using tab as delimiter, and make long string put in the send
+    for header_index in range(8):
+        if header_index == 2:
+            continue
+        print(header_list[header_index], end='\t\t')
+        if header_index == 7:
+            print(header_list[2], end='\t\t')
+
+    print('')
     # Print table body
     for grade_index in range(len(grade_list)):
-        print('--' * 80)
+        print('--' * 90)
         for index in range(8):
-            print(grade_list[grade_index][index], end='\t', flush=True)
+            if index == 2:
+                continue
+            elif index == 1 or index == 3:
+                print(grade_list[grade_index][index], end='\t'*2)
+            elif index == 4:
+                print(grade_list[grade_index][index], end='\t'*7)
+            elif index == 7:
+                print(grade_list[grade_index][index], end='\t'*2)
+            else:
+                print(grade_list[grade_index][index], end='\t')
+            if index == 7:
+                print(grade_list[grade_index][2], end='\t')
             index += 1
         print('')
 
