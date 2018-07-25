@@ -5,11 +5,13 @@ import os.path
 import sys
 import time
 
-__author__ = "memory-yancy <root@memory-yancy.com>"
-
+__author__ = "memory-yancy <root@memory-yancy.com> "
+# fork by shylocks <shylocksyang@gmail.com>
 # http://wlkt.nuist.edu.cn/ will produce redirection, so get latest url in time.
-base_url = requests.get('http://wlkt.nuist.edu.cn').url[:-13]
+http_headers = { 'Accept': '*/*','Connection': 'keep-alive', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36'}
+rs = requests.get('http://wlkt.nuist.edu.cn/',headers=http_headers)
 session = requests.session()
+base_url = rs.url
 
 def get_captcha():
     """
@@ -23,25 +25,21 @@ def get_captcha():
     nuist_captcha: str
         Return wlkt system captcha's content, only four digitals.
     """
-
-    soup = BeautifulSoup(requests.get(base_url + '/' + 'default.aspx').text, "html.parser")
-    captcha_url = base_url + '/' + soup.iframe['src']
+    soup = BeautifulSoup(requests.get(base_url,headers=http_headers).text, "html.parser")
+    captcha_url = base_url.replace('default.aspx',soup.iframe['src'])
     file_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-    with open(file_dir + '/.nuist-captcha.gif', 'wb') as f:
-        f.write(session.get(captcha_url).content)
-
+    with open(file_dir + '/nuist-captcha.gif', 'wb') as f:
+        f.write(session.get(captcha_url,headers=http_headers).content)
     try:
         import PIL.Image
         print("WARNING: will pop a window to display captcha content and you should remember it, we will reuse it.")
-
-        image = PIL.Image.open(file_dir + '/.nuist-captcha.gif')
+        image = PIL.Image.open(file_dir + '/nuist-captcha.gif')
         image.show()
         # Close image file pointer and release its memory
         image.close()
     except ImportError:
         print("WARNING: cann't find PIL(Python Image Library) to identify captcha content, so please look at "
-        "captcha in [%s" % (file_dir + "/.nuist-captcha.gif]") + " file.\n", flush = True)
+        "captcha in [%s" % (file_dir + "/nuist-captcha.gif]") + " file.\n", flush = True)
 
     nuist_captcha = input('INFO: please input captcha content [4-numbers] ---> ')
     while len(nuist_captcha) != 4:
@@ -90,27 +88,19 @@ def login(username, password, role='RadioButton3', action='%E7%99%BB%E5%BD%95'):
     nuist: None
         None if failed.
     """
-
-    if not isinstance(username, str) or not isinstance(password, str):
-        raise ValueError("The %s and %s should be a string." % (username, password))
-
     if len(username) != 11:
         raise ValueError("The %s argument don't 11 numbers." % username)
-    if len(password) != 8:
-        raise ValueError("The %s argument don't 8 numbers." % password)
-
-    if is_login():
-        print("INFO: check that you are loggined in.", flush = True)
-        return session
-
     # __VIEWSTATE parameter's value is fixed, and it must be exist. Or dataset don't submit.
     params = {'__VIEWSTATE': '', 'TextBox1': username, 'TextBox2': password, 'js': role, 'Button1': action}
     login_captcha = get_captcha()
     params['TxtYZM'] = login_captcha
 
-    nuist = session.get(base_url + '/' + 'default.aspx', params = params, timeout = 20)
-    os.remove(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/.nuist-captcha.gif')
-
+    nuist = session.get(base_url, headers=http_headers , params = params, timeout = 20)
+    os.remove(os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/nuist-captcha.gif')
+    #print(session.cookies.get_dict())
+    if str(session.cookies.get_dict()).find('MYWEBAPP.ASPXAUTH'):
+        print('Login Successfully!')
+        return session
     if '(' + username + ')' in nuist.text and username[0:4] in nuist.text:
         return session
     elif 'Error.htm' in nuist.url:
@@ -145,6 +135,4 @@ def quit():
 if __name__ == '__main__':
     username = input('INFO: please input your Student Number ---> ')
     password = input('INFO: please input your Password ---> ')
-
-    login(username, password)
-
+    login(username,password)

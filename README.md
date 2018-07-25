@@ -24,3 +24,7 @@ $ python course_grade.py
 # License
 
 Copyright 2017 <a href="mailto: root@memory-yancy.com">memory-yancy</a>, and this project is licensed under the BSD License.
+
+# fork log
+2018/7/25  
+Fix login problem   
