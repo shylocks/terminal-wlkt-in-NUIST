@@ -9,7 +9,7 @@ __author__ = "memory-yancy <root@memory-yancy.com> "
 # fork by shylocks <shylocksyang@gmail.com>
 # http://wlkt.nuist.edu.cn/ will produce redirection, so get latest url in time.
 http_headers = { 'Accept': '*/*','Connection': 'keep-alive', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36'}
-rs = requests.get('http://wlkt.nuist.edu.cn/',headers=http_headers)
+rs = requests.get('http://wlkt.nuist.edu.cn/', headers=http_headers)
 session = requests.session()
 base_url = rs.url
 

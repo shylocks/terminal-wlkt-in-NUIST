@@ -3,7 +3,8 @@ import requests
 from bs4 import BeautifulSoup
 import sys
 
-grade_url = base_url + '/' + 'student/chengji.aspx'
+grade_url = base_url.replace('default.aspx','student/chengji.aspx')
+http_headers = { 'Accept': '*/*','Connection': 'keep-alive', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/53.0.2785.116 Safari/537.36'}
 
 def get_grade(username, password, academic_year=None, term=1, course_type=None):
     """
@@ -18,7 +19,7 @@ def get_grade(username, password, academic_year=None, term=1, course_type=None):
     if not isinstance(nuist, requests.sessions.Session):
         sys.exit()
 
-    soup = BeautifulSoup(nuist.get(grade_url).text, 'html.parser')
+    soup = BeautifulSoup(nuist.get(grade_url, headers=http_headers).text, 'html.parser')
     whoami = soup.p.string.strip().split(',')[0][:-2]
 
     # TODO: support getting fail in the exams info, list[0] is passing in the exams.
