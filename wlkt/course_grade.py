@@ -68,6 +68,7 @@ def pretty_table(keywords):
                 print(grade_list[grade_index][2], end='\t')
             index += 1
         print('')
+    input('Press any key to exit')
 
 if __name__ == '__main__':
     username = input('INFO: please input your Student Number ---> ')

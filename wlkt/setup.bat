@@ -1,0 +1,1 @@
+pyinstaller -F course_grade.py
